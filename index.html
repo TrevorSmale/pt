@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #282828; /* Gruvbox dark background color */
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #3c3836; /* Gruvbox dark background color */
+      border-radius: 1rem;
+      padding: 3rem;
+      min-width: 25rem;
+      padding: 2rem;
+    }
+
+    .section-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 0.25rem;
+    }
+
+    .timer-label-section {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .timer-label-input {
+      width: 80%;
+      background-color: rgba(255, 255, 255, 0);
+      border-radius: 0.25rem;
+      border: 1px solid #d3869a00; /* Gruvbox light color */
+      font-family: sans-serif;
+      font-size: 1rem;
+      color: #fbf1c7; /* Gruvbox light color */
+      font-weight: bold;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .countdown-bar-section {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border-radius: 0.25rem;
+      height: 0.5rem;
+      background-color: #d65d0e; /* Gruvbox orange color */
+      overflow: hidden;
+    }
+
+    .countdown-bar {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background-color: #d65d0e; /* Gruvbox orange color */
+      transition: width 0.5s ease-in-out;
+    }
+
+    .countdown-fill {
+      height: 100%;
+      background-color: #fbf1c7; /* Gruvbox light color */
+      position: absolute;
+      right: 0;
+    }
+
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timer-display {
+      font-family: sans-serif;
+      font-size: 1.5rem;
+      margin: 10px;
+      color: #fbf1c7; /* Gruvbox light color */
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+      margin-top: 1rem;
+    }
+
+    .timer-button {
+      margin: 0.25rem;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 0.25rem;
+      font-family: sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #fbf1c7; /* Gruvbox light color */
+      background-color: #504945; /* Gruvbox dark color */
+    }
+
+    .start-button {
+      background-color: #98971a; /* Gruvbox green color */
+      color: #282828; /* Gruvbox dark background color */
+    }
+
+    .stop-button {
+      background-color: #cc241d; /* Gruvbox red color */
+      color: #fbf1c7; /* Gruvbox light color */
+      flex-grow: 1;
+    }
+
+    .reset-button {
+      background-color: #458588; /* Gruvbox blue color */
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="section-container">
+      <div class="timer-label-section">
+        <input class="timer-label-input" type="text" placeholder="Enter Timer label">
+      </div>
+    </div>
+    <div class="countdown-bar-section">
+      <div class="countdown-bar">
+        <div class="countdown-fill"></div>
+      </div>
+    </div>
+    <div class="timer-container">
+      <div class="timer-display">00:00</div>
+      <div class="button-row">
+        <button class="timer-button" onclick="addTime(3600)">1hr</button>
+        <button class="timer-button" onclick="addTime(300)">5m</button>
+        <button class="timer-button" onclick="addTime(60)">1m</button>
+        <button class="timer-button" onclick="addTime(5)">5s</button>
+      </div>
+      <div class="button-row">
+        <button class="timer-button start-button" onclick="startTimer()">Start</button>
+        <button class="timer-button stop-button" onclick="stopTimer()">Stop</button>
+        <button class="timer-button reset-button" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+
+    <a href="https://github.com/trevorsmale/pt" target="_blank">
+      <img class="github-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/24/Github_logo_svg.svg" alt="GitHub" style="width: 2rem; height: 2rem; margin-top: 1rem;">
+    </a>
+    
+  </div>
+  
+  <script>
+    const timerDisplay = document.querySelector('.timer-display');
+    const countdownBar = document.querySelector('.countdown-bar');
+    const countdownFill = document.querySelector('.countdown-fill');
+
+    let timerInterval;
+    let initialTime = 0;
+    let currentTime = initialTime;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      timerDisplay.textContent = formatTime(currentTime);
+    }
+
+    function updateCountdownFill() {
+      const fillWidth = ((initialTime - currentTime) / initialTime) * 100;
+      countdownFill.style.width = `${fillWidth}%`;
+    }
+
+    function addTime(seconds) {
+      if (!isRunning) {
+        initialTime += seconds;
+        currentTime += seconds;
+        updateTimerDisplay();
+        countdownBar.style.backgroundColor = '#8ec07c'; /* Gruvbox green color */
+        updateCountdownFill();
+      }
+    }
+
+    function startTimer() {
+      if (!isRunning && currentTime > 0) {
+        isRunning = true;
+        timerInterval = setInterval(() => {
+          currentTime--;
+          updateTimerDisplay();
+          updateCountdownFill();
+          if (currentTime <= 0) {
+            clearInterval(timerInterval);
+            isRunning = false;
+          }
+        }, 1000);
+      }
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      initialTime = 0;
+      currentTime = initialTime;
+      countdownBar.style.backgroundColor = '#d65d0e'; /* Gruvbox orange color */
+      updateTimerDisplay();
+      updateCountdownFill();
+      isRunning = false;
+    }
+
+    updateTimerDisplay();
+    updateCountdownFill();
+  </script>
+</body>
+</html>
